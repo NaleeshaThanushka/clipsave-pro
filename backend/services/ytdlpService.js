@@ -1,17 +1,24 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 const logger = require('../utils/logger');
 const { buildOutputFilename } = require('../utils/filename');
 
 const YTDLP_PATH = process.env.YTDLP_PATH || 'yt-dlp';
 const DOWNLOADS_DIR = path.join(__dirname, '..', process.env.DOWNLOADS_DIR || 'downloads');
+const COOKIES_PATH = path.join(__dirname, '..', 'cookies.txt');
 
-/**
- * Fetch metadata for a URL using `yt-dlp -j` (dump single json, no download).
- */
+function buildBaseArgs() {
+  const args = [];
+  if (fs.existsSync(COOKIES_PATH)) {
+    args.push('--cookies', COOKIES_PATH);
+  }
+  return args;
+}
+
 function getInfo(url) {
   return new Promise((resolve, reject) => {
-    const args = ['-j', '--no-playlist', '--no-warnings', url];
+    const args = [...buildBaseArgs(), '-j', '--no-playlist', '--no-warnings', url];
     const proc = spawn(YTDLP_PATH, args);
 
     let stdout = '';
